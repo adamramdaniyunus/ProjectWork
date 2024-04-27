@@ -1,118 +1,136 @@
+import axios from "axios";
 import Image from "next/image";
-import { Inter } from "next/font/google";
-
-const inter = Inter({ subsets: ["latin"] });
+import { useState, useEffect } from "react";
+import { FaStar } from 'react-icons/fa';
 
 export default function Home() {
+
+  const [rating, setRating] = useState(null);
+  const [hover, setHover] = useState(null);
+
+  useEffect(() => {
+    if (rating === 5) {
+      const modalCheckbox = document.getElementById('my_modal_7');
+      const audio = new Audio('/music/GGGeming.mp3');
+
+      modalCheckbox.checked = true;
+      audio.play();
+
+      const closeModalListener = () => {
+        if (!modalCheckbox.checked) {
+          audio.pause();
+          setRating(null)
+        }
+      };
+
+      modalCheckbox.addEventListener('change', closeModalListener);
+
+      setTimeout(() => {
+        audio.pause();
+        modalCheckbox.checked = false;
+        setRating(null)
+        modalCheckbox.removeEventListener('change', closeModalListener);
+      }, 194400);
+
+      return () => {
+        modalCheckbox.removeEventListener('change', closeModalListener);
+      };
+    } else if (rating && rating < 5) {
+      const modal = document.getElementById('modal_bintang_rendah');
+
+      modal.checked = true;
+      const closeModalListener = () => {
+        if (!modal.checked) {
+          setRating(null)
+        }
+      };
+
+      modal.addEventListener('change', closeModalListener);
+
+      setTimeout(() => {
+        modal.checked = false;
+        setRating(null)
+        modal.removeEventListener('change', closeModalListener);
+      }, 10000);
+      return () => {
+        modal.removeEventListener('change', closeModalListener);
+      };
+    }
+  }, [rating]);
+
+  const handleRating = async (index) => {
+    setRating(index);
+
+    await axios.post('/api/poin', {
+      poin: index
+    })
+  }
+
   return (
-    <main
-      className={`flex min-h-screen flex-col items-center justify-between p-24 ${inter.className}`}
-    >
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">pages/index.js</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <div className="flex justify-center items-center h-screen">
+      <div className="card w-96 bg-[#fff] shadow-xl">
+        <figure className="px-10 pt-10">
+          <img src="https://daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.jpg" alt="Shoes" className="rounded-xl" />
+        </figure>
+        <div className="card-body items-center text-center">
+          <h2 className="card-title">Berikan kami nilai</h2>
+          <p className="text-xs">Kalo bintang lima ntar ada musiknya</p>
+          <div className="card-actions justify-center w-full">
+            {[...Array(5)].map((star, index) => {
+              const currentIndex = index + 1
+
+              return (
+                <label className="" key={index}>
+                  <input
+                    type="radio"
+                    name="rating"
+                    className="hidden"
+                    value={currentIndex}
+                    onClick={() => handleRating(currentIndex)}
+
+                  />
+                  <FaStar
+                    size={40}
+                    color={currentIndex <= (hover || rating) ? "#EE7214" : "#000"}
+                    onMouseEnter={() => setHover(currentIndex)}
+                    onMouseLeave={() => setHover(null)}
+                  />
+                </label>
+
+              )
+            })}
+
+            <input type="checkbox" id="my_modal_7" className="modal-toggle" />
+            <div className="modal" role="dialog">
+              <div className="modal-box bg-white">
+                <h3 className="text-lg font-bold uppercase">gege geming</h3>
+                <div className="flex justify-center items-center">
+
+                  <Image
+                    width={100}
+                    height={100}
+                    src={"/windah.gif"} />
+                </div>
+                <p className="py-4">Terimakasihh bintang limanya!</p>
+              </div>
+              <label className="modal-backdrop" htmlFor="my_modal_7">Close</label>
+            </div>
+
+
+            <input type="checkbox" id="modal_bintang_rendah" className="modal-toggle" />
+            <div className="modal" role="dialog">
+              <div className="modal-box bg-white">
+                <h3 className="text-lg font-bold uppercase">Terimakasih</h3>
+                <div className="flex justify-center items-center">
+
+                </div>
+                <p className="py-4">Terimakasihh bintangnya!</p>
+              </div>
+              <label className="modal-backdrop" htmlFor="modal_bintang_rendah">Close</label>
+            </div>
+          </div>
         </div>
       </div>
-
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-full sm:before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full sm:after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700/10 after:dark:from-sky-900 after:dark:via-[#0141ff]/40 before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Discover and deploy boilerplate example Next.js&nbsp;projects.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50 text-balance`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+    </div>
   );
 }
